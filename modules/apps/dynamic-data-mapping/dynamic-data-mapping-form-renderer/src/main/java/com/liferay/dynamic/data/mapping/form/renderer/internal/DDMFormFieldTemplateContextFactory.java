@@ -33,6 +33,7 @@ import com.liferay.dynamic.data.mapping.service.DDMFormInstanceLocalService;
 import com.liferay.dynamic.data.mapping.storage.DDMFormFieldValue;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageConstants;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -72,7 +73,7 @@ public class DDMFormFieldTemplateContextFactory {
 		_locale = ddmFormRenderingContext.getLocale();
 	}
 
-	public List<Object> create() {
+	public List<Object> create() throws PortalException {
 		return createDDMFormFieldTemplateContexts(
 			_ddmFormFieldValues, StringPool.BLANK);
 	}
@@ -134,9 +135,10 @@ public class DDMFormFieldTemplateContextFactory {
 	}
 
 	protected Map<String, Object> createDDMFormFieldTemplateContext(
-		DDMFormFieldValue ddmFormFieldValue,
-		Map<String, Object> changedProperties, int index,
-		String parentDDMFormFieldParameterName) {
+			DDMFormFieldValue ddmFormFieldValue,
+			Map<String, Object> changedProperties, int index,
+			String parentDDMFormFieldParameterName)
+		throws PortalException {
 
 		DDMFormField ddmFormField = _ddmFormFieldsMap.get(
 			ddmFormFieldValue.getName());
@@ -173,8 +175,9 @@ public class DDMFormFieldTemplateContextFactory {
 	}
 
 	protected List<Object> createDDMFormFieldTemplateContexts(
-		List<DDMFormFieldValue> ddmFormFieldValues,
-		String parentDDMFormFieldParameterName) {
+			List<DDMFormFieldValue> ddmFormFieldValues,
+			String parentDDMFormFieldParameterName)
+		throws PortalException {
 
 		List<Object> ddmFormFieldTemplateContexts = new ArrayList<>();
 
@@ -205,8 +208,9 @@ public class DDMFormFieldTemplateContextFactory {
 	}
 
 	protected Map<String, Object> createNestedDDMFormFieldTemplateContext(
-		DDMFormFieldValue parentDDMFormFieldValue,
-		String parentDDMFormFieldParameterName) {
+			DDMFormFieldValue parentDDMFormFieldValue,
+			String parentDDMFormFieldParameterName)
+		throws PortalException {
 
 		Map<String, Object> nestedDDMFormFieldTemplateContext = new HashMap<>();
 
@@ -285,7 +289,8 @@ public class DDMFormFieldTemplateContextFactory {
 	}
 
 	protected Map<String, Object> getChangedProperties(
-		DDMFormFieldValue ddmFormFieldValue) {
+			DDMFormFieldValue ddmFormFieldValue)
+		throws PortalException {
 
 		Map<String, Object> changedProperties =
 			_ddmFormFieldsPropertyChanges.get(
@@ -754,6 +759,10 @@ public class DDMFormFieldTemplateContextFactory {
 		_ddmFormFieldsPropertyChanges;
 	private DDMFormFieldTypeServicesTracker _ddmFormFieldTypeServicesTracker;
 	private final List<DDMFormFieldValue> _ddmFormFieldValues;
+
+	@Reference
+	private DDMFormInstanceLocalService _ddmFormInstanceLocalService;
+
 	private final DDMFormRenderingContext _ddmFormRenderingContext;
 	private final Locale _locale;
 	private final boolean _pageEnabled;
