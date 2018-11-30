@@ -50,4 +50,21 @@
 	padding: 20px 10px 10px 20px;
 	right: -15px;
 	width: 40px;
+
+	&.cke_image_resizer_ne {
+		right: -15px;
+		top: -25px;
+	}
+	&.cke_image_resizer_nw {
+		left: -25px;
+		top: -25px;
+	}
+	&.cke_image_resizer_se {
+		bottom: -15px;
+		right: -15px;
+	}
+	&.cke_image_resizer_sw {
+		bottom: -15px;
+		left: -25px;
+	}
 }
