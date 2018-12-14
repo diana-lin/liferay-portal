@@ -596,6 +596,8 @@ public class LocalizationImpl implements Localization {
 		PortletPreferences preferences, PortletRequest portletRequest,
 		String parameter, String defaultValue) {
 
+		// dummy change
+
 		return getLocalizationXmlFromPreferences(
 			preferences, portletRequest, parameter, defaultValue, null);
 	}
