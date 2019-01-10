@@ -18,6 +18,7 @@ import com.liferay.document.library.kernel.exception.NoSuchFileEntryException;
 import com.liferay.document.library.kernel.service.DLAppService;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.model.Value;
+import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.dynamic.data.mapping.storage.DDMFormFieldValue;
 import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
 import com.liferay.dynamic.data.mapping.storage.Fields;
@@ -138,7 +139,7 @@ public class JournalArticleExportImportContentProcessor
 		JournalArticle article = (JournalArticle)stagedModel;
 
 		DDMStructure ddmStructure = _fetchDDMStructure(
-			portletDataContext, article);
+			portletDataContext, stagedModel, article);
 
 		Fields fields = _getDDMStructureFields(ddmStructure, content);
 
@@ -567,15 +568,54 @@ public class JournalArticleExportImportContentProcessor
 	}
 
 	private DDMStructure _fetchDDMStructure(
-		PortletDataContext portletDataContext, JournalArticle article) {
+			PortletDataContext portletDataContext, StagedModel stagedModel,
+			JournalArticle article)
+		throws PortalException {
 
-		long formerGroupId = article.getGroupId();
+		DDMStructure ddmStructure = null;
 
-		article.setGroupId(portletDataContext.getScopeGroupId());
+		if (ExportImportThreadLocal.isImportInProcess()) {
+			Map<Long, Long> ddmStructureIds =
+				(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
+					DDMStructure.class);
 
-		DDMStructure ddmStructure = article.getDDMStructure();
+			Map<String, String> ddmStructureKeys =
+				(Map<String, String>)portletDataContext.getNewPrimaryKeysMap(
+					DDMStructure.class + ".ddmStructureKey");
 
-		article.setGroupId(formerGroupId);
+			List<Element> referenceElements =
+				portletDataContext.getReferenceElements(
+					stagedModel, DDMStructure.class);
+
+			String oldDDMStructureKey = article.getDDMStructureKey();
+			String newDDMStructureKey =
+				ddmStructureKeys.get(oldDDMStructureKey);
+
+			for (Element referenceElement : referenceElements) {
+				Long classPK = GetterUtil.getLong(
+					referenceElement.attributeValue("class-pk"));
+
+				long ddmStructureId = MapUtil.getLong(
+					ddmStructureIds, classPK, classPK);
+
+				DDMStructure referenceDDMStructure =
+					_ddmStructureLocalService.getDDMStructure(ddmStructureId);
+
+				if (newDDMStructureKey.equals(
+					referenceDDMStructure.getStructureKey())) {
+					ddmStructure = referenceDDMStructure;
+				}
+			}
+		}
+		else {
+			long formerGroupId = article.getGroupId();
+
+			article.setGroupId(portletDataContext.getScopeGroupId());
+
+			ddmStructure = article.getDDMStructure();
+
+			article.setGroupId(formerGroupId);
+		}
 
 		return ddmStructure;
 	}
@@ -618,6 +658,9 @@ public class JournalArticleExportImportContentProcessor
 	@Reference(target = "(model.class.name=java.lang.String)")
 	private ExportImportContentProcessor<String>
 		_defaultTextExportImportContentProcessor;
+
+	@Reference
+	private DDMStructureLocalService _ddmStructureLocalService;
 
 	@Reference
 	private DLAppService _dlAppService;
